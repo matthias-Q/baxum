@@ -1,5 +1,6 @@
 use rand::{distributions::Alphanumeric, Rng};
 use serde::{Deserialize, Serialize};
+use std::env;
 
 #[derive(Serialize, Debug, Clone, PartialEq, Deserialize)]
 struct User {
@@ -23,8 +24,12 @@ fn create_random_users(n: usize) -> Vec<User> {
 
 fn main() {
     let cpus = num_cpus::get();
-    let users = create_random_users(cpus * 2);
 
+    let num_users = env::var("NUM_USERS")
+        .unwrap_or_else(|_| format!("{cpus}"))
+        .parse::<usize>()
+        .expect("no integer");
+    let users = create_random_users(num_users);
 
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(cpus)
